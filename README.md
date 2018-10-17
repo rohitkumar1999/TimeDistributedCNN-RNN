@@ -1,6 +1,6 @@
 # CNN-RNN architecture using Time Distributed Layers 
 
-The model architecture is targeted to achieve a nominal accuracy for video analysis. It was a part of a sign language detection project made for TicTechToe-18 @DAIICT.
+The model architecture is targeted to achieve a nominal accuracy for video analysis. It was a part of a sign language detection project made for TicTechToe-18  @DAIICT which basically works as an helping hand between normal and differently abled persons.
 
 ## Getting Started
 
