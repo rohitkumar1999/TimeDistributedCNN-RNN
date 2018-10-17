@@ -1,26 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
-
-# In[ ]:
-
-
 import tensorflow as tf
-
-
-# In[ ]:
-
-
 import tensorlayer as tl
-
-
-# In[ ]:
-
-
 import numpy as np
-
-
-# In[ ]:
-
 
 n_height = 64
 n_width = 64
@@ -32,104 +14,28 @@ n_epochs = 40
 channels = 1
 batch_size = 80
 
-
-# In[ ]:
-
-
 x_train = np.load('path_to_x_train.npy')
-
-
-# In[ ]:
-
-
 y_train = np.load('path_to_y_train.npy')
-
-
-# In[ ]:
-
-
-x_train.shape, y_train.shape
-
-
-# In[ ]:
-
 
 x_test = np.load('path_to_x_test.npy')
 y_test = np.load('path_to_y_test.npy')
 
-
-# In[ ]:
-
-
-x_test.shape, y_test.shape
-
-
-# In[ ]:
-
-
 x = np.vstack((x_train, x_test))
 _y = np.hstack((y_train, y_test))
 
-
-# In[ ]:
-
-
-x.shape, _y.shape
-
-
-# In[ ]:
-
-
 from sklearn.model_selection import StratifiedShuffleSplit
 
-
-# In[ ]:
-
-
 x = np.array(x, dtype=np.float32)
-
-
-# In[ ]:
-
-
 x = x/255
-
-
-# In[ ]:
-
-
 x.shape+(1,)
-
-
-# In[ ]:
-
-
 x = x.reshape(x.shape+(1,))
-
-
-# In[ ]:
-
-
 sss = StratifiedShuffleSplit(test_size=26)
 for train_index, test_index in sss.split(x, _y):
     x_train, y_train = x[train_index], _y[train_index]
     x_test, y_test = x[test_index], _y[test_index]
 
-
-# In[ ]:
-
-
 x_train.shape, x_test.shape
-
-
-# In[ ]:
-
-
 x_train.shape, y_train.shape
-
-
-# In[ ]:
-
 
 def next_batch(batch_size = batch_size, x_train = x_train, y_train = y_train):
     strtix = 0
@@ -139,30 +45,14 @@ def next_batch(batch_size = batch_size, x_train = x_train, y_train = y_train):
         strtix = endix
         endix+=batch_size
 
-
-# In[ ]:
-
-
 for a,b in next_batch():
     print(np.unique(b, return_counts=True))
 
-
-# In[ ]:
-
-
 tf.reset_default_graph()
-
-
-# In[ ]:
-
 
 with tf.variable_scope('Input'):
     X = tf.placeholder(dtype=tf.float32, name='X', shape=[None,n_steps, n_height, n_width,channels])
     y = tf.placeholder(dtype=tf.int32, name='y', shape=[None])
-
-
-# In[ ]:
-
 
 with tf.variable_scope('CNN'):
     X_layer = tl.layers.InputLayer(X, name='X_layer')
@@ -171,10 +61,6 @@ with tf.variable_scope('CNN'):
     avg_pool1 = tl.layers.TimeDistributedLayer(prev_layer=cnn2, layer_class=tl.layers.MeanPool2d, layer_args={'filter_size':(4,4), 'strides':(1,1), 'padding':'SAME','name':'avg_pool1'})
     flatten = tl.layers.TimeDistributedLayer(prev_layer=avg_pool1, layer_class=tl.layers.FlattenLayer, layer_args={'name':'flatten1'})
     cnn_output = flatten.outputs
-
-
-# In[ ]:
-
 
 with tf.variable_scope('RNN', initializer=tf.contrib.layers.variance_scaling_initializer()):
     cell = tf.nn.rnn_cell.GRUCell(activation=tf.nn.elu, dtype=tf.float32,num_units=30, name='gru')
@@ -190,10 +76,6 @@ with tf.variable_scope('RNN', initializer=tf.contrib.layers.variance_scaling_ini
                               kernel_regularizer= tf.contrib.layers.l1_regularizer(scale=alpha))
     prediction = tf.nn.softmax(logits = hidden2)
 
-
-# In[ ]:
-
-
 with tf.variable_scope('loss'):
     regularization_loss = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
     xentropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits=hidden2, labels= y)
@@ -206,10 +88,6 @@ with tf.variable_scope('performance'):
     
 with tf.variable_scope('training'):
     training_op = optimizer.minimize(loss)
-
-
-# In[ ]:
-
 
 init = tf.global_variables_initializer()
 saver = tf.train.Saver()
